@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>ApotheonMod</RootNamespace>
+    <AssemblyName>ApotheonMultiplayerPatch</AssemblyName>
+    <LangVersion>10.0</LangVersion>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net4.8</TargetFramework>
+  </PropertyGroup>
+
+  <Target Name="CopyToBepInEx" AfterTargets="Build" Condition="'$(ApotheonDir)' != ''">
+    <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll"
+      DestinationFolder="$(ApotheonDir)\BepInEx\plugins" ContinueOnError="false" />
+    <Copy SourceFiles="$(OutputPath)settings.cfg" DestinationFolder="$(ApotheonDir)\BepInEx\plugins"
+      ContinueOnError="false" />
+  </Target>
+
+  <ItemGroup>
+    <None Update="settings.cfg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>$(ApotheonDir)\BepInEx\core\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx.Core">
+      <HintPath>$(ApotheonDir)\BepInEx\core\BepInEx.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx.NET.Common">
+      <HintPath>$(ApotheonDir)\BepInEx\core\BepInEx.NET.Common.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

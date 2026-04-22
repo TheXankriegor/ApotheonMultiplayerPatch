@@ -1,0 +1,87 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+  workflow_dispatch:
+
+env:
+  BEPINEX_URL: "https://github.com/BepInEx/BepInEx/releases/download/v6.0.0-pre.2/BepInEx-NET.Framework-net40-win-x86-6.0.0-pre.2.zip"
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.x"
+
+      - name: Download BepInEx
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "$env:BEPINEX_URL" -OutFile bepinex.zip
+          Expand-Archive -Path bepinex.zip -DestinationPath bepinex
+
+      - name: Set version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          # Strip prerelease suffix (e.g. 1.2.3-pre -> 1.2.3)
+          echo "VERSION=${TAG%%-*}" >> "$GITHUB_ENV"
+          # Detect prerelease: tag contains a hyphen
+          if [[ "$TAG" == *-* ]]; then
+            echo "PRERELEASE_FLAG=--prerelease" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build (Release)
+        shell: pwsh
+        run: |
+          $apotheonDir = "${{ github.workspace }}\bepinex"
+          $buildArgs = @(
+            "ApotheonMod/ApotheonMod.csproj",
+            "--configuration", "Release",
+            "/p:ApotheonDir=$apotheonDir"
+          )
+          if ($env:VERSION) {
+            $buildArgs += "/p:Version=$env:VERSION"
+            $buildArgs += "/p:AssemblyVersion=$env:VERSION"
+            $buildArgs += "/p:FileVersion=$env:VERSION"
+          }
+          dotnet build @buildArgs
+
+      - name: Collect artifacts
+        id: collect
+        shell: pwsh
+        run: |
+          $stageDir = "staging/ApotheonMultiplayerPatch"
+          New-Item -ItemType Directory -Path $stageDir -Force | Out-Null
+          Copy-Item "ApotheonMod/bin/Release/net4.8/ApotheonMultiplayerPatch.dll" $stageDir/
+          Copy-Item "ApotheonMod/bin/Release/net4.8/settings.cfg" $stageDir/
+          
+          echo "artifact-dir=staging" >> $env:GITHUB_OUTPUT
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ApotheonMultiplayerPatch
+          path: ${{ steps.collect.outputs.artifact-dir }}
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pwsh -c "Compress-Archive -Path ${{ steps.collect.outputs.artifact-dir }}/ApotheonMultiplayerPatch -DestinationPath ApotheonMultiplayerPatch.zip"
+          gh release create "$GITHUB_REF_NAME" \
+            ApotheonMultiplayerPatch.zip \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            $PRERELEASE_FLAG

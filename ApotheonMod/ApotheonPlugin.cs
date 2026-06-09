@@ -16,9 +16,10 @@ public class ApotheonPlugin : BasePlugin
 {
     #region Constants
 
-    private const string Version = "0.0.2";
+    private const string Version = "1.0.0";
     private const string ModName = "Apotheon Multiplayer Patch";
     private const string OriginalMasterServer = "50.19.227.23";
+    private const string DefaultCustomMasterServer = "138.2.150.186";
 
     #endregion
 
@@ -146,7 +147,7 @@ public class ApotheonPlugin : BasePlugin
                 "# Apotheon and Apotheon Arena master server override", "#",
                 "# This file contains an alternative master server address to use instead of the hardcoded one.",
                 "# The first line without '#' will be used as the alternative address.",
-                "# For hosting your own master server see https://github.com/cybervand/ApothArena-MasterServer", "#", $"{OriginalMasterServer}"
+                "# For hosting your own master server see https://github.com/TheXankriegor/ApotheonMultiplayerPatch", "#", $"{DefaultCustomMasterServer}"
             };
 
             File.WriteAllText(settingsFile, string.Join("\n", masterServerTemplate));

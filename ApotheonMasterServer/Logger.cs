@@ -1,8 +1,20 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace ApotheonMasterServer;
 
-internal class Logger
+public interface ILogger
+{
+    void Debug(string message);
+
+    void Info(string message);
+
+    void Warning(string message);
+
+    void Error(string message);
+}
+
+public class Logger : ILogger
 {
     #region Public Methods
 
@@ -32,6 +44,7 @@ internal class Logger
 
     #region Non-Public Methods
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Print(string type, string str)
     {
         Console.WriteLine($"[{type} {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}Z] {str}");

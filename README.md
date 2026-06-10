@@ -10,9 +10,10 @@ A BepInEx mod for Apotheon & Apotheon Arena that **fixes multiplayer** by replac
 ## Installation
 
 1. Download the [BepInEx-NET.Framework-net40](https://github.com/BepInEx/BepInEx/releases/download/v6.0.0-pre.2/BepInEx-NET.Framework-net40-win-x86-6.0.0-pre.2.zip) release from [BepInEx v6.0.0-pre.2](https://github.com/BepInEx/BepInEx/releases/tag/v6.0.0-pre.2) (or any of the following 6.X releases) and extract it into your Apotheon game directory
-2. Download the latest release of this mod and place it in `BepInEx/plugins/`
-3. Launch the game via `BepInEx.NET.Framework.Launcher.exe`
-4. The mod should load in the console log:
+2. Download the [latest release](https://github.com/TheXankriegor/ApotheonMultiplayerPatch/releases/latest) of this mod and place it in `BepInEx/plugins/`
+3. In `BepInEx\config\BepInEx.cfg` set Assembly to `Assembly = Apotheon.exe` (or `ApotheonArena.exe`) and save
+4. Launch the game via `BepInEx.NET.Framework.Launcher.exe`
+5. The mod should load in the console log:
 
 ```
 [Info   :   BepInEx] 1 plugin to load

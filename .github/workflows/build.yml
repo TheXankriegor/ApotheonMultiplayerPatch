@@ -1,9 +1,11 @@
 name: Build
 
+permissions:
+  contents: write
+
 on:
   push:
   pull_request:
-
   workflow_dispatch:
 
 env:
@@ -72,13 +74,18 @@ jobs:
           name: ApotheonMultiplayerPatch
           path: ${{ steps.collect.outputs.artifact-dir }}
 
+      - name: Create release archive
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "${{ steps.collect.outputs.artifact-dir }}/ApotheonMultiplayerPatch" -DestinationPath ApotheonMultiplayerPatch.zip
+
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          pwsh -c "Compress-Archive -Path ${{ steps.collect.outputs.artifact-dir }}/ApotheonMultiplayerPatch -DestinationPath ApotheonMultiplayerPatch.zip"
           gh release create "$GITHUB_REF_NAME" \
             ApotheonMultiplayerPatch.zip \
             --title "$GITHUB_REF_NAME" \

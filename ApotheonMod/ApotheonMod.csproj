@@ -15,6 +15,12 @@
 		<Copy SourceFiles="$(OutputPath)settings.cfg" DestinationFolder="$(ApotheonDir)\BepInEx\plugins"
 		      ContinueOnError="false" />
 	</Target>
+	<Target Name="CopyToArenaBepInEx" AfterTargets="Build" Condition="'$(ApotheonArenaDir)' != ''">
+		<Copy SourceFiles="$(OutputPath)$(AssemblyName).dll"
+		      DestinationFolder="$(ApotheonArenaDir)\BepInEx\plugins" ContinueOnError="false" />
+		<Copy SourceFiles="$(OutputPath)settings.cfg" DestinationFolder="$(ApotheonArenaDir)\BepInEx\plugins"
+		      ContinueOnError="false" />
+	</Target>
 
 	<ItemGroup>
 		<None Update="settings.cfg">

@@ -1,0 +1,134 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
+using HarmonyLib;
+
+namespace ApotheonMod;
+
+internal class ReflectedType
+{
+    #region Fields
+
+    private readonly Dictionary<string, MethodInfo> _methods;
+    private readonly Dictionary<string, FieldInfo> _fields;
+    private readonly Dictionary<string, PropertyInfo> _properties;
+
+    #endregion
+
+    #region Constructors
+
+    public ReflectedType(string typeName)
+    {
+        Type = FindType(typeName);
+
+        _methods = new Dictionary<string, MethodInfo>();
+        _fields = new Dictionary<string, FieldInfo>();
+        _properties = new Dictionary<string, PropertyInfo>();
+    }
+
+    #endregion
+
+    #region Properties
+
+    public Type Type { get; }
+
+    #endregion
+
+    #region Public Methods
+
+    public MethodInfo Method(string methodName, Type[] parameters)
+    {
+        var combinedName = $"{methodName}_{string.Join("_", parameters.Select(x => x.Name))}";
+
+        if (!_methods.TryGetValue(combinedName, out var method))
+        {
+            method = AccessTools.Method(Type, methodName, parameters);
+            _methods.Add(combinedName, method);
+        }
+
+        return method;
+    }
+
+    public MethodInfo Method(string methodName)
+    {
+        if (!_methods.TryGetValue(methodName, out var method))
+        {
+            method = AccessTools.Method(Type, methodName);
+            _methods.Add(methodName, method);
+        }
+
+        return method;
+    }
+
+    public object Invoke(string methodName, object instance, object[] args)
+    {
+        return Method(methodName).Invoke(instance, args);
+    }
+
+    public object Invoke(string methodName, Type[] parameters, object instance, object[] args)
+    {
+        return Method(methodName, parameters).Invoke(instance, args);
+    }
+
+    public object GetField(string fieldName, object instance)
+    {
+        return Field(fieldName).GetValue(instance);
+    }
+
+    public void SetField(string fieldName, object instance, object value)
+    {
+        Field(fieldName).SetValue(instance, value);
+    }
+
+    public object GetProperty(string propertyName, object instance)
+    {
+        return Property(propertyName).GetValue(instance);
+    }
+
+    public void SetProperty(string propertyName, object instance, object value)
+    {
+        Property(propertyName).SetValue(instance, value);
+    }
+
+    public FieldInfo Field(string fieldName)
+    {
+        if (!_fields.TryGetValue(fieldName, out var field))
+        {
+            field = AccessTools.Field(Type, fieldName);
+            _fields.Add(fieldName, field);
+        }
+
+        return field;
+    }
+
+    public PropertyInfo Property(string propertyName)
+    {
+        if (!_properties.TryGetValue(propertyName, out var property))
+        {
+            property = AccessTools.Property(Type, propertyName);
+            _properties.Add(propertyName, property);
+        }
+
+        return property;
+    }
+
+    #endregion
+
+    #region Non-Public Methods
+
+    private static Type FindType(string typeName)
+    {
+        foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            var type = asm.GetType(typeName, throwOnError: false);
+            if (type != null)
+                return type;
+        }
+
+        return null;
+    }
+
+    #endregion
+}
